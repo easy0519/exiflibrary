@@ -229,8 +229,24 @@ namespace ExifLibrary
                 else
                     return new ExifURationalArray(etag, ExifBitConverter.ToURationalArray(value, (int)count, byteOrder));
             }
+            else if (type == 6) // 6 = SBYTE An 8-bit signed (twos-complement) integer.
+            {
+                if (count == 1)
+                    return new ExifSByte(etag, Convert.ToSByte(value[0]));
+                else
+                    return new ExifSByteArray(etag, Array.ConvertAll(value, b => Convert.ToSByte(b)));
+            }
             else if (type == 7) // 7 = UNDEFINED An 8-bit byte that can take any value depending on the field definition.
+            {
                 return new ExifUndefined(etag, value);
+            }
+            else if (type == 8) // 8 = SSHORT A 16-bit (2-byte) signed short
+            {
+                if (count == 1)
+                    return new ExifSShort(etag, conv.ToInt16(value, 0));
+                else
+                    return new ExifSShortArray(etag, ExifBitConverter.ToSShortArray(value, (int)count, byteOrder));
+            }
             else if (type == 9) // 9 = SLONG A 32-bit (4-byte) signed integer (2's complement notation).
             {
                 if (count == 1)
@@ -244,6 +260,20 @@ namespace ExifLibrary
                     return new ExifSRational(etag, ExifBitConverter.ToSRational(value, byteOrder));
                 else
                     return new ExifSRationalArray(etag, ExifBitConverter.ToSRationalArray(value, (int)count, byteOrder));
+            }
+            else if (type == 11) // 11 = FLOAT A single precision (4-byte) IEEE format
+            {
+                if (count == 1)
+                    return new ExifFloat(etag, conv.ToSingle(value, 0));
+                else
+                    return new ExifFloatArray(etag, ExifBitConverter.ToSingleArray(value, (int)count, byteOrder));
+            }
+            else if (type == 12) // 12 = DOUBLE A double precision (8-byte) IEEE format
+            {
+                if (count == 1)
+                    return new ExifDouble(etag, conv.ToDouble(value, 0));
+                else
+                    return new ExifDoubleArray(etag, ExifBitConverter.ToDoubleArray(value, (int)count, byteOrder));
             }
             else
                 throw new ArgumentException("Unknown property type.");

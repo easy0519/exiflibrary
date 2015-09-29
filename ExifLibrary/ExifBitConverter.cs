@@ -135,9 +135,9 @@ namespace ExifLibrary
         public static ushort[] ToUShortArray(byte[] data, int count, ByteOrder frombyteorder)
         {
             ushort[] numbers = new ushort[count];
+            byte[] num = new byte[2];
             for (uint i = 0; i < count; i++)
             {
-                byte[] num = new byte[2];
                 Array.Copy(data, i * 2, num, 0, 2);
                 numbers[i] = ToUInt16(num, 0, frombyteorder, BitConverterEx.SystemByteOrder);
             }
@@ -152,11 +152,28 @@ namespace ExifLibrary
         public static uint[] ToUIntArray(byte[] data, int count, ByteOrder frombyteorder)
         {
             uint[] numbers = new uint[count];
+            byte[] num = new byte[4];
             for (uint i = 0; i < count; i++)
             {
-                byte[] num = new byte[4];
                 Array.Copy(data, i * 4, num, 0, 4);
                 numbers[i] = ToUInt32(num, 0, frombyteorder, BitConverterEx.SystemByteOrder);
+            }
+            return numbers;
+        }
+
+        /// <summary>
+        /// Returns an array of 16-bit signed integers converted from 
+        /// the given byte array.
+        /// Numbers are converted from the given byte-order to platform byte-order.
+        /// </summary>
+        public static short[] ToSShortArray(byte[] data, int count, ByteOrder byteorder)
+        {
+            short[] numbers = new short[count];
+            byte[] num = new byte[4];
+            for (uint i = 0; i < count; i++)
+            {
+                Array.Copy(data, i * 4, num, 0, 4);
+                numbers[i] = ToInt16(num, 0, byteorder, BitConverterEx.SystemByteOrder);
             }
             return numbers;
         }
@@ -169,9 +186,9 @@ namespace ExifLibrary
         public static int[] ToSIntArray(byte[] data, int count, ByteOrder byteorder)
         {
             int[] numbers = new int[count];
+            byte[] num = new byte[4];
             for (uint i = 0; i < count; i++)
             {
-                byte[] num = new byte[4];
                 Array.Copy(data, i * 4, num, 0, 4);
                 numbers[i] = ToInt32(num, 0, byteorder, BitConverterEx.SystemByteOrder);
             }
@@ -186,10 +203,10 @@ namespace ExifLibrary
         public static MathEx.UFraction32[] ToURationalArray(byte[] data, int count, ByteOrder frombyteorder)
         {
             MathEx.UFraction32[] numbers = new MathEx.UFraction32[count];
+            byte[] num = new byte[4];
+            byte[] den = new byte[4];
             for (uint i = 0; i < count; i++)
             {
-                byte[] num = new byte[4];
-                byte[] den = new byte[4];
                 Array.Copy(data, i * 8, num, 0, 4);
                 Array.Copy(data, i * 8 + 4, den, 0, 4);
                 numbers[i].Set(ToUInt32(num, 0, frombyteorder, BitConverterEx.SystemByteOrder), ToUInt32(den, 0, frombyteorder, BitConverterEx.SystemByteOrder));
@@ -205,13 +222,49 @@ namespace ExifLibrary
         public static MathEx.Fraction32[] ToSRationalArray(byte[] data, int count, ByteOrder frombyteorder)
         {
             MathEx.Fraction32[] numbers = new MathEx.Fraction32[count];
+            byte[] num = new byte[4];
+            byte[] den = new byte[4];
             for (uint i = 0; i < count; i++)
             {
-                byte[] num = new byte[4];
-                byte[] den = new byte[4];
                 Array.Copy(data, i * 8, num, 0, 4);
                 Array.Copy(data, i * 8 + 4, den, 0, 4);
                 numbers[i].Set(ToInt32(num, 0, frombyteorder, BitConverterEx.SystemByteOrder), ToInt32(den, 0, frombyteorder, BitConverterEx.SystemByteOrder));
+            }
+            return numbers;
+        }
+
+        /// <summary>
+        /// Returns an array of 32-bit single precisions (4-byte) IEEE format converted from 
+        /// the given byte array.
+        /// Numbers are converted from the given byte-order to platform byte-order.
+        /// </summary>
+        public static float[] ToSingleArray(byte[] data, int count, ByteOrder byteorder)
+        {
+            const int blen = 4;
+            float[] numbers = new float[count];
+            byte[] num = new byte[blen];
+            for (uint i = 0; i < count; i++)
+            {
+                Array.Copy(data, i * blen, num, 0, blen);
+                numbers[i] = ToSingle(num, 0, byteorder, BitConverterEx.SystemByteOrder);
+            }
+            return numbers;
+        }
+
+        /// <summary>
+        /// Returns an array of 64-bit double precisions (8-byte) IEEE format converted from 
+        /// the given byte array.
+        /// Numbers are converted from the given byte-order to platform byte-order.
+        /// </summary>
+        public static double[] ToDoubleArray(byte[] data, int count, ByteOrder byteorder)
+        {
+            const int blen = 8;
+            double[] numbers = new double[count];
+            byte[] num = new byte[blen];
+            for (uint i = 0; i < count; i++)
+            {
+                Array.Copy(data, i * blen, num, 0, blen);
+                numbers[i] = ToDouble(num, 0, byteorder, BitConverterEx.SystemByteOrder);
             }
             return numbers;
         }
@@ -305,6 +358,21 @@ namespace ExifLibrary
         }
 
         /// <summary>
+        /// Converts the given array of 16-bit signed integers to an array of bytes.
+        /// Numbers are converted from the platform byte-order to the given byte-order.
+        /// </summary>
+        public static byte[] GetBytes(short[] value, ByteOrder tobyteorder)
+        {
+            byte[] data = new byte[2 * value.Length];
+            for (int i = 0; i < value.Length; i++)
+            {
+                byte[] num = GetBytes(value[i], BitConverterEx.SystemByteOrder, tobyteorder);
+                Array.Copy(num, 0, data, i * 2, 2);
+            }
+            return data;
+        }
+
+        /// <summary>
         /// Converts the given array of 32-bit signed integers to an array of bytes.
         /// Numbers are converted from the platform byte-order to the given byte-order.
         /// </summary>
@@ -315,6 +383,36 @@ namespace ExifLibrary
             {
                 byte[] num = GetBytes(value[i], BitConverterEx.SystemByteOrder, tobyteorder);
                 Array.Copy(num, 0, data, i * 4, 4);
+            }
+            return data;
+        }
+
+        /// <summary>
+        /// Converts the given array of 32-bit single precision (4-byte) IEEE format to an array of bytes.
+        /// Numbers are converted from the platform byte-order to the given byte-order.
+        /// </summary>
+        public static byte[] GetBytes(float[] value, ByteOrder tobyteorder)
+        {
+            byte[] data = new byte[4 * value.Length];
+            for (int i = 0; i < value.Length; i++)
+            {
+                byte[] num = GetBytes(value[i], BitConverterEx.SystemByteOrder, tobyteorder);
+                Array.Copy(num, 0, data, i * 4, 4);
+            }
+            return data;
+        }
+
+        /// <summary>
+        /// Converts the given array of 64-bit double precision (8-byte) IEEE format to an array of bytes.
+        /// Numbers are converted from the platform byte-order to the given byte-order.
+        /// </summary>
+        public static byte[] GetBytes(double[] value, ByteOrder tobyteorder)
+        {
+            byte[] data = new byte[8 * value.Length];
+            for (int i = 0; i < value.Length; i++)
+            {
+                byte[] num = GetBytes(value[i], BitConverterEx.SystemByteOrder, tobyteorder);
+                Array.Copy(num, 0, data, i * 8, 8);
             }
             return data;
         }
